@@ -12,7 +12,7 @@
 /* ---------- Self-healing: riscos somem onde a película é aquecida ---------- */
 (function(){
   const panel = document.getElementById("heal"); if (!panel) return;
-  const cv = panel.querySelector("canvas"), ctx = cv.getContext("2d"), heat = panel.querySelector(".heat");
+  const cv = panel.querySelector("canvas"), ctx = cv.getContext("2d", { willReadFrequently: true }), heat = panel.querySelector(".heat");
   const status = document.getElementById("heal-status"), autoBtn = document.getElementById("heal-auto"), resetBtn = document.getElementById("heal-reset");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let W = 0, H = 0, dpr = 1, base = 1, healed = false, timer = 0, running = false;
@@ -183,14 +183,15 @@ document.querySelectorAll(".ba").forEach((ba) => {
   let wheelD = 1, lastDeg = null;
   const measure = () => { const w = document.querySelector(".wheel"); wheelD = Math.max(1, w.offsetWidth * .94); };
   measure(); window.addEventListener("resize", measure);
-  gsap.ticker.add(() => {
+  const spin = () => {
     const deg = (gsap.getProperty(mover, "x") / (Math.PI * wheelD) * 360) % 360;
     if (deg === lastDeg) return; lastDeg = deg;
     wheelImgs.forEach((w) => { w.style.transform = "rotate(" + deg + "deg)"; });
-  });
+  };
+  gsap.ticker.add(spin);
   gsap.set(".hero", { "--light": 0 });
   gsap.timeline({ delay: .3 })
-    .fromTo(mover, { x: () => -window.innerWidth * 1.1 }, { x: 0, duration: 2.2, ease: "power3.out" })
+    .fromTo(mover, { x: () => -window.innerWidth * 1.1 }, { x: 0, duration: 2.2, ease: "power3.out", onComplete: () => gsap.ticker.remove(spin) }) // carro parado: rodas não precisam mais de cálculo por quadro
     .to(".hero", { "--light": 1, duration: 1, ease: "power2.out" }, "-=.6");
 
   const mm = gsap.matchMedia();
@@ -204,7 +205,7 @@ document.querySelectorAll(".ba").forEach((ba) => {
        Fica fixado também no celular, porque é a história de abertura. */
     const pills = gsap.utils.toArray(".hero-services a");
     const heroTl = gsap.timeline({
-      scrollTrigger: { trigger: "#hero", start: "top top", end: desk ? "+=380%" : "+=260%", scrub: 1, pin: true, anticipatePin: 1 },
+      scrollTrigger: { trigger: "#hero", start: "top top", end: desk ? "+=380%" : "+=260%", scrub: 1, pin: true, anticipatePin: 1, invalidateOnRefresh: true },
       onUpdate(){
         const t = heroTl.time();
         const idx = t < .05 ? -1 : Math.min(4, Math.floor(t));
@@ -215,7 +216,10 @@ document.querySelectorAll(".ba").forEach((ba) => {
     const W0 = "inset(0% 0% 0% 0%)", clearR = "inset(0% 0% 0% 100%)", hideR = "inset(0% 100% 0% 0%)";
     gsap.set("#gloss,#beads,#ppfTint", { clipPath: hideR });
     gsap.set("#gloss", { opacity: .9 }); gsap.set("#beads", { opacity: 1 }); gsap.set("#ppfTint", { opacity: 1 });
-    [0, 1, 2, 3].forEach((t) => heroTl.fromTo("#wipe .line", { left: "0%", opacity: 1 }, { left: "100%", duration: 1, ease: "none", immediateRender: false }, t));
+    // Linha e faixa andam com transform (só composição), em vez de left, que recalcula layout a cada quadro
+    const carW = () => document.getElementById("wipe").offsetWidth;
+    gsap.set("#sweep .band", { skewX: -14 });
+    [0, 1, 2, 3].forEach((t) => heroTl.fromTo("#wipe .line", { x: 0, opacity: 1 }, { x: carW, duration: 1, ease: "none", immediateRender: false }, t));
     heroTl
       .fromTo("#dirt",   { clipPath: W0 },    { clipPath: clearR, duration: 1, ease: "none" }, 0) // lavagem
       .fromTo("#haze",   { clipPath: W0 },    { clipPath: clearR, duration: 1, ease: "none" }, 1) // higienização
@@ -223,7 +227,7 @@ document.querySelectorAll(".ba").forEach((ba) => {
       .fromTo("#gloss",  { clipPath: hideR }, { clipPath: W0,     duration: 1, ease: "none" }, 2)
       .fromTo("#beads",  { clipPath: hideR }, { clipPath: W0,     duration: 1, ease: "none" }, 3) // vitrificação
       // PPF: a borda da película passa como um rodo, seca as gotas e deixa só um brilho limpo
-      .fromTo("#sweep .band", { left: "-15%" }, { left: "110%", duration: 1, ease: "none" }, 4)
+      .fromTo("#sweep .band", { xPercent: 0 }, { xPercent: 1250, duration: 1, ease: "none" }, 4) // 125% do carro = 12,5 larguras da faixa
       .fromTo("#beads",   { clipPath: W0 },    { clipPath: clearR, duration: .8, ease: "none", immediateRender: false }, 4.08)
       .fromTo("#ppfTint", { clipPath: hideR }, { clipPath: W0,     duration: .8, ease: "none" }, 4.08)
       .to("#wipe .line", { opacity: 0, duration: .05 }, 4)

@@ -70,9 +70,15 @@
 }
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
+<!-- Performance: fonte servida pelo próprio site (sem CSS bloqueante do Google) e imagens do hero
+     pré-carregadas, já que as máscaras só seriam descobertas depois de o CSS ser lido -->
+<link rel="preload" href="assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/img/car-side.webp" as="image" fetchpriority="high">
+<link rel="preload" href="assets/img/mask-all.webp" as="image" crossorigin><!-- máscaras CSS são buscadas em modo CORS -->
+<link rel="preload" href="assets/img/mask-body.webp" as="image" crossorigin><!-- máscaras CSS são buscadas em modo CORS -->
+<link rel="preload" href="assets/img/mask-glass.webp" as="image" crossorigin><!-- máscaras CSS são buscadas em modo CORS -->
+<link rel="preload" href="assets/img/fx-dirt.svg" as="image">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -119,7 +125,7 @@
            Cada camada é um estado que o scroll vai removendo ou revelando. -->
       <div class="car-wrap" aria-hidden="true">
        <div class="car-move">
-        <img class="car-img" src="assets/img/car-side.webp" alt="">
+        <img class="car-img" src="assets/img/car-side.webp" alt="" width="1600" height="484" fetchpriority="high">
         <div class="wheel" style="left:7.875%;top:42.975%;width:16.812%;height:55.579%;-webkit-mask-image:url(assets/img/wheel-rear-mask.webp);mask-image:url(assets/img/wheel-rear-mask.webp)"><img src="assets/img/wheel-rear.webp" alt=""></div>
         <div class="wheel" style="left:70.25%;top:43.388%;width:16.75%;height:55.372%;-webkit-mask-image:url(assets/img/wheel-front-mask.webp);mask-image:url(assets/img/wheel-front-mask.webp)"><img src="assets/img/wheel-front.webp" alt=""></div>
         <div class="fx m-body" id="gloss"></div>
@@ -436,8 +442,8 @@
   <span>Trechos tracejados ainda precisam de confirmação.</span>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="assets/js/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/main.js" defer></script>
 </body>
 </html>
