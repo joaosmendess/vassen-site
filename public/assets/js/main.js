@@ -1,12 +1,15 @@
-/* ---------- Reflexo da lataria seguindo o mouse (só desktop) ---------- */
+/* Modo de edição: o painel /admin abre o site com ?editar. Sem animações de scroll, tudo parado e visível. */
+const EDITING = new URLSearchParams(location.search).has("editar");
+
+/* ---------- Fotos enviadas pelo editor: só baixam quando estão chegando na tela ---------- */
 (function(){
-  if (!window.matchMedia("(pointer: fine)").matches) return;
-  const wrap = document.querySelector(".car-wrap"), glint = document.getElementById("glint");
-  wrap.style.pointerEvents = "auto";
-  wrap.addEventListener("mousemove", (e) => {
-    const r = wrap.getBoundingClientRect();
-    glint.style.setProperty("--gx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%");
-  });
+  const photos = document.querySelectorAll(".has-photo");
+  const on = (el) => el.classList.add("img-on");
+  if (EDITING || !("IntersectionObserver" in window)){ photos.forEach(on); return; }
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting){ on(e.target); io.unobserve(e.target); }
+  }), { rootMargin: "100% 0px" });
+  photos.forEach((el) => io.observe(el));
 })();
 
 /* ---------- Self-healing: riscos somem onde a película é aquecida ---------- */
@@ -87,6 +90,11 @@
   new ResizeObserver(size).observe(panel); size();
 })();
 
+/* ---------- Links do topo: se o cliente removeu um serviço no editor, o link leva à lista de serviços ---------- */
+document.querySelectorAll('.hero-services a[href^="#servico-"]').forEach((a) => {
+  if (!document.getElementById(a.hash.slice(1))) a.href = "#servicos";
+});
+
 /* ---------- Header que reage ao scroll ---------- */
 (function(){
   const nav = document.querySelector(".nav");
@@ -109,39 +117,67 @@ document.querySelectorAll(".ba").forEach((ba) => {
   input.addEventListener("input", set); set();
 });
 
+/* ---------- Link do topo para um serviço: ao chegar, o divisor desliza mostrando o antes e o depois ---------- */
+(function(){
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const demo = (ba) => {
+    const input = ba.querySelector("input"); if (!input || reduce) return;
+    const keys = [50, 18, 82, 50], dur = 1800, t0 = performance.now();
+    let stop = false; const cancel = () => { stop = true; };
+    ba.addEventListener("pointerdown", cancel, { once: true }); // a pessoa mexeu: para a demonstração
+    const ease = (x) => x < .5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2;
+    (function step(now){
+      if (stop) return;
+      const t = Math.min(1, (now - t0) / dur), seg = Math.min(2, Math.floor(t * 3)), k = ease(t * 3 - seg);
+      input.value = keys[seg] + (keys[seg + 1] - keys[seg]) * k;
+      ba.style.setProperty("--pos", input.value + "%");
+      if (t < 1) requestAnimationFrame(step);
+    })(t0);
+  };
+  document.querySelectorAll(".hero-services a").forEach((a) => a.addEventListener("click", () => {
+    const card = document.getElementById(a.hash.slice(1));
+    if (!card || !card.matches(".service")) return;
+    let done = false;
+    const arrive = () => {
+      if (done) return; done = true;
+      card.classList.add("arrive"); setTimeout(() => card.classList.remove("arrive"), 2400);
+      const ba = card.querySelector(".ba"); if (ba) demo(ba);
+    };
+    window.addEventListener("scrollend", arrive, { once: true }); // fim da rolagem suave
+    setTimeout(arrive, 1100); // navegadores sem scrollend
+  }));
+})();
+
 /* ---------- Seletor "Não sabe qual serviço escolher?" ---------- */
 (function(){
-  const WHATS = "https://wa.me/?text="; // trocar por https://wa.me/5582XXXXXXXXX?text=
+  // Número e recomendações vêm do bloco #dados do HTML, que o cliente edita no painel /admin
+  const num = (document.querySelector('[data-edit="contato.whatsapp"]')?.textContent || "").replace(/\D/g, "");
+  const WHATS = "https://wa.me/" + num + "?text=";
   const quiz = document.getElementById("quiz");
+  if (!quiz) return; // seção escondida pelo painel
   const qs = [...quiz.querySelectorAll(".q")];
   const res = document.getElementById("result");
   const answers = {};
-  const label = { sujeira:"sujeira do dia a dia", riscos:"riscos e falta de brilho", interior:"interior sujo ou com cheiro", impacto:"proteção contra pedrisco", novo:"carro novo", usado:"carro usado", sim:"pego estrada com frequência", nao:"rodo mais na cidade" };
+  const label = {};
 
   function recommend(a){
-    if (a.dor === "impacto"){
-      if (a.carro === "novo") return ["PPF com vitrificação", "Com o carro ainda novo, a pintura está no melhor estado para receber o filme. A vitrificação por cima facilita a limpeza e aumenta o brilho."];
-      if (a.estrada === "sim") return ["Polimento + PPF na frente do carro", "Quem pega estrada recebe a maior parte dos impactos no para-choque, capô e retrovisores. O polimento corrige o que já existe antes do filme entrar."];
-      return ["Polimento + PPF", "O polimento recupera a pintura e o PPF protege as áreas que mais sofrem no dia a dia, como para-choque, portas e soleiras."];
-    }
-    if (a.dor === "riscos") return a.carro === "novo"
-      ? ["Polimento + vitrificação", "Riscos em carro novo costumam ser marcas de lavagem. O polimento remove e a vitrificação ajuda a não voltarem tão cedo."]
-      : ["Polimento técnico", "O polimento remove riscos finos e oxidação e devolve a profundidade da cor. Depois, vale pensar em vitrificação ou PPF para manter o resultado."];
-    if (a.dor === "interior") return ["Higienização interna", "Limpeza profunda de bancos, carpetes, teto e saídas de ar, com remoção de manchas e odores."];
-    return a.estrada === "sim"
-      ? ["Lavagem detalhada + vitrificação", "A vitrificação facilita tirar a sujeira de estrada e a lavagem técnica mantém a pintura sem riscos."]
-      : ["Lavagem detalhada", "A manutenção certa para manter a pintura limpa sem os riscos de uma lavagem comum."];
+    if (a.dor === "impacto") return a.carro === "novo" ? "ppf-vitri" : a.estrada === "sim" ? "pol-ppf-frente" : "pol-ppf";
+    if (a.dor === "riscos") return a.carro === "novo" ? "pol-vitri" : "polimento";
+    if (a.dor === "interior") return "higienizacao";
+    return a.estrada === "sim" ? "lav-vitri" : "lavagem";
   }
+  const rec = (id) => [...document.querySelector('[data-rec="' + id + '"]').children].map((el) => el.textContent.trim());
 
   quiz.addEventListener("click", (e) => {
     const b = e.target.closest(".opts button"); if (!b) return;
     const q = b.closest(".q"); answers[q.dataset.key] = b.dataset.v;
+    label[q.dataset.key] = b.textContent.trim().toLowerCase();
     const i = qs.indexOf(q); q.classList.remove("on");
     if (i < qs.length - 1){ qs[i + 1].classList.add("on"); qs[i + 1].querySelector("button").focus(); return; }
-    const [t, txt] = recommend(answers);
+    const [t, txt] = rec(recommend(answers));
     document.getElementById("r-title").textContent = t;
     document.getElementById("r-text").textContent = txt;
-    const msg = "Olá! Fiz o teste no site da Vassen e a recomendação foi " + t + ". Meu caso: " + label[answers.dor] + ", " + label[answers.carro] + ", " + label[answers.estrada] + ". Pode me passar um orçamento?";
+    const msg = "Olá! Fiz o teste no site da Vassen e a recomendação foi " + t + ". Meu caso: " + label.dor + ", " + label.carro + ", " + label.estrada + ". Pode me passar um orçamento?";
     document.getElementById("r-link").href = WHATS + encodeURIComponent(msg);
     res.classList.add("on"); document.getElementById("r-link").focus();
   });
@@ -154,18 +190,22 @@ document.querySelectorAll(".ba").forEach((ba) => {
 (function(){
   if (typeof gsap === "undefined") return;
   gsap.registerPlugin(ScrollTrigger);
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Na edição o site fica no estado final, sem scroll animado, e o título não é quebrado em palavras
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches || EDITING;
 
   const title = document.getElementById("heroTitle");
-  title.innerHTML = title.textContent.trim().split(/\s+/).map(w => '<span class="w"><span>' + w + '</span></span>').join(" ");
+  // Monta as palavras como elementos (não como HTML), já que o título vem do painel de edição
+  if (!EDITING) title.replaceChildren(...title.textContent.trim().split(/\s+/).flatMap((w, i) => {
+    const outer = document.createElement("span"), inner = document.createElement("span");
+    outer.className = "w"; inner.textContent = w; outer.append(inner);
+    return i ? [" ", outer] : [outer];
+  }));
 
   const layers = gsap.utils.toArray("#stack .layer");
   gsap.set("#stack", { rotationX: 58, rotationZ: -36 });
   gsap.set(".duo .stone", { xPercent: -50, yPercent: -50 });
 
   if (reduce){
-    gsap.set("#dirt,#haze,#swirls", { opacity: 0 });
-    gsap.set("#gloss,#ppfTint", { opacity: 1 }); gsap.set("#beads", { opacity: 0 }); gsap.set(".hero-services .bar", { scaleX: 1 });
     gsap.set(".scratches", { opacity: 0 });
     gsap.set(".film", { clipPath: "inset(0% 0% 0% 0%)" });
     gsap.set(".squeegee,.gloss", { opacity: 0 });
@@ -178,21 +218,6 @@ document.querySelectorAll(".ba").forEach((ba) => {
 
   gsap.from("#heroTitle .w > span", { yPercent: 110, duration: 1.1, ease: "power4.out", stagger: .06, delay: .15 });
   gsap.from(".h1-kicker, .hero .lead, .hero-services", { opacity: 0, y: 16, duration: .9, ease: "power3.out", delay: .55, stagger: .1 });
-  /* Entrada: o carro chega dirigindo, as rodas giram de acordo com o deslocamento e a luz do estúdio acende */
-  const mover = document.querySelector(".car-move"), wheelImgs = gsap.utils.toArray(".wheel img");
-  let wheelD = 1, lastDeg = null;
-  const measure = () => { const w = document.querySelector(".wheel"); wheelD = Math.max(1, w.offsetWidth * .94); };
-  measure(); window.addEventListener("resize", measure);
-  const spin = () => {
-    const deg = (gsap.getProperty(mover, "x") / (Math.PI * wheelD) * 360) % 360;
-    if (deg === lastDeg) return; lastDeg = deg;
-    wheelImgs.forEach((w) => { w.style.transform = "rotate(" + deg + "deg)"; });
-  };
-  gsap.ticker.add(spin);
-  gsap.set(".hero", { "--light": 0 });
-  gsap.timeline({ delay: .3 })
-    .fromTo(mover, { x: () => -window.innerWidth * 1.1 }, { x: 0, duration: 2.2, ease: "power3.out", onComplete: () => gsap.ticker.remove(spin) }) // carro parado: rodas não precisam mais de cálculo por quadro
-    .to(".hero", { "--light": 1, duration: 1, ease: "power2.out" }, "-=.6");
 
   const mm = gsap.matchMedia();
   mm.add({ desktop: "(min-width: 821px)", mobile: "(max-width: 820px)" }, (ctx) => {
@@ -200,39 +225,6 @@ document.querySelectorAll(".ba").forEach((ba) => {
     const pinCfg = (el, len) => desk
       ? { trigger: el, start: "top top", end: "+=" + len, scrub: 1, pin: true, anticipatePin: 1 }
       : { trigger: el, start: "top 70%", end: "bottom 30%", scrub: 1 };
-
-    /* Hero: cada trecho do scroll é um serviço sendo feito no carro.
-       Fica fixado também no celular, porque é a história de abertura. */
-    const pills = gsap.utils.toArray(".hero-services a");
-    const heroTl = gsap.timeline({
-      scrollTrigger: { trigger: "#hero", start: "top top", end: desk ? "+=380%" : "+=260%", scrub: 1, pin: true, anticipatePin: 1, invalidateOnRefresh: true },
-      onUpdate(){
-        const t = heroTl.time();
-        const idx = t < .05 ? -1 : Math.min(4, Math.floor(t));
-        pills.forEach((p, i) => p.classList.toggle("on", i === idx));
-      }
-    });
-    // Cada serviço passa pelo carro da esquerda para a direita, guiado pela linha de luz
-    const W0 = "inset(0% 0% 0% 0%)", clearR = "inset(0% 0% 0% 100%)", hideR = "inset(0% 100% 0% 0%)";
-    gsap.set("#gloss,#beads,#ppfTint", { clipPath: hideR });
-    gsap.set("#gloss", { opacity: .9 }); gsap.set("#beads", { opacity: 1 }); gsap.set("#ppfTint", { opacity: 1 });
-    // Linha e faixa andam com transform (só composição), em vez de left, que recalcula layout a cada quadro
-    const carW = () => document.getElementById("wipe").offsetWidth;
-    gsap.set("#sweep .band", { skewX: -14 });
-    [0, 1, 2, 3].forEach((t) => heroTl.fromTo("#wipe .line", { x: 0, opacity: 1 }, { x: carW, duration: 1, ease: "none", immediateRender: false }, t));
-    heroTl
-      .fromTo("#dirt",   { clipPath: W0 },    { clipPath: clearR, duration: 1, ease: "none" }, 0) // lavagem
-      .fromTo("#haze",   { clipPath: W0 },    { clipPath: clearR, duration: 1, ease: "none" }, 1) // higienização
-      .fromTo("#swirls", { clipPath: W0 },    { clipPath: clearR, duration: 1, ease: "none" }, 2) // polimento
-      .fromTo("#gloss",  { clipPath: hideR }, { clipPath: W0,     duration: 1, ease: "none" }, 2)
-      .fromTo("#beads",  { clipPath: hideR }, { clipPath: W0,     duration: 1, ease: "none" }, 3) // vitrificação
-      // PPF: a borda da película passa como um rodo, seca as gotas e deixa só um brilho limpo
-      .fromTo("#sweep .band", { xPercent: 0 }, { xPercent: 1250, duration: 1, ease: "none" }, 4) // 125% do carro = 12,5 larguras da faixa
-      .fromTo("#beads",   { clipPath: W0 },    { clipPath: clearR, duration: .8, ease: "none", immediateRender: false }, 4.08)
-      .fromTo("#ppfTint", { clipPath: hideR }, { clipPath: W0,     duration: .8, ease: "none" }, 4.08)
-      .to("#wipe .line", { opacity: 0, duration: .05 }, 4)
-      .to({}, { duration: .6 })  // pausa no carro pronto antes de liberar a página
-      .fromTo(".hero-services .bar", { scaleX: 0 }, { scaleX: 1, duration: 5, ease: "none" }, 0)
 
     // No celular as etapas ficam todas visíveis; o destaque por etapa só faz sentido com a seção fixada
     const steps = desk ? gsap.utils.toArray(".steps li") : [{}, {}, {}];
@@ -265,7 +257,7 @@ document.querySelectorAll(".ba").forEach((ba) => {
 
   const btn = document.getElementById("magnetic");
   const label = btn.querySelector(".label");
-  if (window.matchMedia("(pointer: fine)").matches){
+  if (!EDITING && window.matchMedia("(pointer: fine)").matches){
     btn.addEventListener("mousemove", (e) => {
       const r = btn.getBoundingClientRect();
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Editor do site | Vassen</title>
+<link rel="preload" href="../assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<p class="boot" id="boot">Carregando…</p>
+
+<!-- Entrada -->
+<section class="gate" id="login" hidden>
+  <form class="gate-card" id="login-form">
+    <p class="brand">VASSEN<span>Editor do site</span></p>
+    <label for="password">Senha</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button class="primary" type="submit">Entrar</button>
+    <p class="error" id="login-error" role="alert"></p>
+  </form>
+</section>
+
+<section class="gate" id="setup" hidden>
+  <div class="gate-card">
+    <p class="brand">VASSEN<span>Editor do site</span></p>
+    <p>O painel ainda não foi configurado no servidor. Falta cadastrar a senha e o espaço onde os textos ficam guardados (veja o README do projeto).</p>
+  </div>
+</section>
+
+<!-- Editor -->
+<div class="app" id="app" hidden>
+  <header class="bar">
+    <p class="brand">VASSEN<span>Editor do site</span></p>
+    <div class="seg" role="group" aria-label="Ver o site como">
+      <button type="button" data-view="desk" aria-pressed="true">Computador</button>
+      <button type="button" data-view="phone" aria-pressed="false">Celular</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="actions">
+      <button type="button" class="ghost" id="btn-fields" aria-controls="fields-panel" aria-expanded="false">Outros textos</button>
+      <button type="button" class="ghost" id="btn-sections" aria-controls="sections-panel" aria-expanded="false">Seções</button>
+      <button type="button" class="ghost" id="btn-versions" aria-controls="versions-panel" aria-expanded="false">Versões</button>
+      <button type="button" class="primary" id="btn-save" disabled>Salvar</button>
+      <button type="button" class="ghost" id="btn-logout">Sair</button>
+    </div>
+  </header>
+
+  <p class="hint" id="hint" hidden>
+    <span>Clique em qualquer texto do site para editar. Nos parágrafos, selecione um trecho para aplicar negrito, itálico ou link.
+    Passe o mouse em fotos e itens de lista para trocar, adicionar, remover ou mudar a ordem.
+    Número do WhatsApp, links e textos do Google ficam em <b>Outros textos</b>.</span>
+    <button type="button" class="ghost" id="hint-ok">Entendi</button>
+  </p>
+
+  <main class="stage">
+    <div class="frame" id="frame"><iframe id="site" title="Site da Vassen em modo de edição"></iframe></div>
+
+    <aside class="panel" id="fields-panel" hidden aria-labelledby="fields-title">
+      <header><h2 id="fields-title">Outros textos</h2><button type="button" class="ghost close" data-close aria-label="Fechar">×</button></header>
+      <p class="panel-intro">O que não aparece direto na página, mas faz parte do site.</p>
+      <div id="fields"></div>
+    </aside>
+
+    <aside class="panel" id="sections-panel" hidden aria-labelledby="sections-title">
+      <header><h2 id="sections-title">Seções</h2><button type="button" class="ghost close" data-close aria-label="Fechar">×</button></header>
+      <p class="panel-intro">Desligue uma seção para tirá-la do site sem perder o conteúdo. No editor ela continua aparecendo, mais clara, para poder ser religada.</p>
+      <ul class="sections" id="sections"></ul>
+    </aside>
+
+    <aside class="panel" id="versions-panel" hidden aria-labelledby="versions-title">
+      <header><h2 id="versions-title">Versões</h2><button type="button" class="ghost close" data-close aria-label="Fechar">×</button></header>
+      <p class="panel-intro">Cada vez que você salva, uma cópia fica guardada por 6 meses. Escolha uma para o site voltar a ela.</p>
+      <ol class="versions" id="versions"></ol>
+    </aside>
+  </main>
+
+  <div class="toolbar" id="toolbar" hidden>
+    <div class="tools">
+      <button type="button" data-cmd="bold" title="Negrito"><b>N</b></button>
+      <button type="button" data-cmd="italic" title="Itálico"><i>I</i></button>
+      <button type="button" data-cmd="link">Link</button>
+      <button type="button" data-cmd="unlink">Tirar link</button>
+    </div>
+    <form class="link-form" id="link-form" hidden>
+      <input type="url" id="link-url" placeholder="https://" aria-label="Endereço do link" required>
+      <button type="submit" class="primary">Aplicar</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

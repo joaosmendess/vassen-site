@@ -1,0 +1,4 @@
+# Copie para .dev.vars (não vai para o Git) para testar o painel no seu computador.
+# Em produção, cadastre as duas como variáveis secretas no projeto da Cloudflare Pages.
+ADMIN_PASSWORD=troque-por-uma-senha-longa
+SESSION_SECRET=troque-por-um-texto-aleatorio-longo

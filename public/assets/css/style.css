@@ -6,31 +6,22 @@
   unicode-range:U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201D,U+2022,U+2026,U+20AC;
 }
 :root{
-  --bg:#E6E9EC; --surface:#D9DEE3; --ink:#13171C; --muted:#56606B;
-  --line:rgba(19,23,28,.14); --header:rgba(230,233,236,.8);
+  /* Cores da marca Vassen: fundo petróleo escuro (o mesmo dos posts), amarelo nos destaques
+     e petróleo no texto sobre o amarelo. Um tema só, igual em claro e escuro, como a identidade. */
+  --amarelo:#F4BC44; --petroleo-escuro:#1C2A2F; --petroleo:#24343C;
+  --bg:var(--petroleo-escuro); --surface:var(--petroleo); --ink:#F3F1EA; --muted:#A7B6BA;
+  --accent:var(--amarelo);
+  --line:rgba(243,241,234,.12); --header:rgba(28,42,47,.84);
   --paint-1:#3A434E; --paint-2:#1A1F26; --paint-3:#0C0F13;
   --film:linear-gradient(115deg,rgba(120,220,255,0) 0%,rgba(120,220,255,.55) 28%,rgba(185,150,255,.5) 50%,rgba(255,196,140,.45) 72%,rgba(255,196,140,0) 100%);
-  --cta-bg:#13171C; --cta-ink:#F2F5F7; --todo:#B4690E;
-  color-scheme:light;
+  --cta-bg:var(--amarelo); --cta-ink:var(--petroleo); --todo:#FF8A7A; /* tracejado de "falta preencher": coral, para não confundir com o amarelo */
+  color-scheme:dark;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#11151A; --surface:#1A2027; --ink:#E9EEF2; --muted:#8C97A3;
-    --line:rgba(233,238,242,.12); --header:rgba(17,21,26,.74);
-    --cta-bg:#E9EEF2; --cta-ink:#11151A; --todo:#F0A64A;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#11151A; --surface:#1A2027; --ink:#E9EEF2; --muted:#8C97A3;
-  --line:rgba(233,238,242,.12); --header:rgba(17,21,26,.74);
-  --cta-bg:#E9EEF2; --cta-ink:#11151A; --todo:#F0A64A;
-  color-scheme:dark;
-}
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 *,*::before,*::after{box-sizing:inherit;margin:0;padding:0}
 body{
   background:var(--bg);color:var(--ink);
@@ -41,7 +32,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 img,svg{max-width:100%;display:block}
 a{color:inherit}
 button{font:inherit;color:inherit}
-:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:4px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
 
 .display{font-stretch:125%;font-weight:700;letter-spacing:-.02em;line-height:.98}
 .wrap{max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
@@ -65,7 +56,7 @@ button{font:inherit;color:inherit}
 .brand span{font-weight:400;font-stretch:100%;color:var(--muted);margin-left:.4em}
 .nav ul{list-style:none;display:flex;gap:clamp(14px,2.4vw,28px);font-size:.93rem}
 .nav ul a{text-decoration:none;color:var(--muted)}
-.nav ul a:hover{color:var(--ink)}
+.nav ul a:hover{color:var(--accent)}
 .nav .go{white-space:nowrap;color:var(--cta-ink)!important;background:var(--cta-bg);padding:10px 18px;border-radius:999px;font-weight:600}
 .nav ul{align-items:center}
 @media (max-width:720px){.nav ul li:not(:last-child){display:none}}
@@ -82,73 +73,31 @@ button{font:inherit;color:inherit}
 .copy p{color:var(--muted);max-width:40ch}
 
 /* ---------- Hero ---------- */
-.hero .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;align-items:stretch;gap:12px;padding-bottom:64px}
+/* Abertura só tipográfica: título grande embaixo, como capa */
+.hero{min-height:min(88svh,860px);display:grid}
+.hero .stage{height:auto;grid-template-columns:minmax(0,1fr);align-content:end;padding-top:128px;padding-bottom:clamp(56px,9vh,104px)}
 .hero-top{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(24px,4vw,64px);align-items:end}
 .hero-side{display:grid;gap:22px}
 .hero h1{display:grid;gap:.35em}
-.h1-kicker{font-size:clamp(1rem,1.5vw,1.2rem);font-weight:600;font-stretch:100%;letter-spacing:0;line-height:1.2;color:var(--muted)}
+.h1-kicker{font-size:clamp(1rem,1.5vw,1.2rem);font-weight:600;font-stretch:100%;letter-spacing:0;line-height:1.2;color:var(--accent)}
 .h1-main{font-size:clamp(2.3rem,5.6vw,5.4rem);max-width:12ch}
 .h1-main .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em}
 .h1-main .w > span{display:inline-block}
 .hero .lead{color:var(--muted);max-width:46ch;font-size:clamp(1rem,1.4vw,1.2rem)}
-.car-wrap{width:min(100%,1040px);margin:0 auto;align-self:center;position:relative;aspect-ratio:1600/484}
-.car-move::before{content:"";position:absolute;left:6%;right:6%;bottom:-3%;height:9%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.42),rgba(0,0,0,0));filter:blur(4px)}
-.car-img{position:relative;width:100%;height:auto;display:block}
-/* Piso de showroom: reflexo suave do carro (sem custo extra; navegadores sem suporte só não mostram) */
-.car-move{-webkit-box-reflect:below -2px linear-gradient(transparent 62%,rgba(0,0,0,.16))}
-/* Luz de estúdio atrás do carro */
-.hero::before{content:"";position:absolute;inset:auto 0 0 0;height:75%;pointer-events:none;
-  background:radial-gradient(48% 46% at 50% 74%,rgba(255,255,255,.7),rgba(255,255,255,0) 70%)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero::before{background:radial-gradient(48% 46% at 50% 74%,rgba(150,170,190,.13),rgba(150,170,190,0) 70%)}}
-:root[data-theme="dark"] .hero::before{background:radial-gradient(48% 46% at 50% 74%,rgba(150,170,190,.13),rgba(150,170,190,0) 70%)}
-.hero .stage{position:relative}
-/* Reflexo que acompanha o mouse na lataria */
-#glint{--gx:50%;background:radial-gradient(circle at var(--gx) 34%,rgba(255,255,255,.2),rgba(255,255,255,0) 22%);mix-blend-mode:screen;opacity:0;transition:opacity .4s}
-.car-wrap:hover #glint{opacity:1}
-.fx{position:absolute;inset:0;pointer-events:none}
-.car-move{position:relative;will-change:transform}
-.wheel{position:absolute;-webkit-mask-size:100% 100%;mask-size:100% 100%}
-.wheel img{width:100%;height:100%;display:block;will-change:transform}
-/* Linha de passagem: cada serviço "passa" pelo carro da esquerda para a direita */
-#wipe .line{position:absolute;top:0;bottom:0;left:-35px;width:70px;opacity:0;mix-blend-mode:screen;will-change:transform;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(215,236,250,.5) 44%,#fff 50%,rgba(215,236,250,.5) 56%,rgba(255,255,255,0))}
-/* Luz do estúdio acende quando o carro estaciona */
-.hero{--light:1}
-.hero::before{opacity:var(--light)}
-.car-wrap{filter:brightness(calc(.45 + .55 * var(--light)))}
-:root{--m-body:url("../img/mask-body.webp");--m-glass:url("../img/mask-glass.webp");--m-all:url("../img/mask-all.webp")}
-.m-body{-webkit-mask:var(--m-body) center/100% 100% no-repeat;mask:var(--m-body) center/100% 100% no-repeat}
-.m-glass{-webkit-mask:var(--m-glass) center/100% 100% no-repeat;mask:var(--m-glass) center/100% 100% no-repeat}
-.m-all{-webkit-mask:var(--m-all) center/100% 100% no-repeat;mask:var(--m-all) center/100% 100% no-repeat}
-.m-beads{
-  -webkit-mask-image:var(--m-body),linear-gradient(#000 0 34%,transparent 62%);-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat;-webkit-mask-composite:source-in;
-  mask-image:var(--m-body),linear-gradient(#000 0 34%,transparent 62%);mask-size:100% 100%;mask-repeat:no-repeat;mask-composite:intersect;
-}
-/* Sujeira: barro concentrado embaixo, com manchas irregulares */
-#dirt{background:url("../img/fx-dirt.svg") 0 0/100% 100% no-repeat,linear-gradient(to top,rgba(90,70,46,.8) 0%,rgba(104,82,55,.42) 18%,rgba(124,104,78,.2) 40%,rgba(150,134,108,.16) 100%)}
-/* Vidros embaçados e empoeirados */
-#haze{background:
-  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.03' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 .78  0 0 0 0 .74  0 0 0 0 .66  0 0 0 -1.4 1.2'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>") 0 0/50% 100%,
-  rgba(150,140,124,.62)}
-/* Pintura fosca e com micro-riscos circulares */
-#swirls{background:url("../img/fx-swirls.svg") 0 0/100% 100% no-repeat,rgba(176,182,188,.2)}
-/* Brilho do verniz polido */
-#gloss{opacity:0;background:
-  linear-gradient(180deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,.08) 30%,rgba(255,255,255,0) 52%),
-  linear-gradient(180deg,transparent 54%,rgba(255,255,255,.14) 57%,transparent 61%)}
-/* Gotas da vitrificação */
-#beads{opacity:0;background:url("../img/fx-beads.svg") 0 0/100% 100% no-repeat}
-/* Película: leve tom iridescente e reflexo que percorre a lataria */
-#ppfTint{opacity:0;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.04) 42%,rgba(255,255,255,0) 60%),linear-gradient(115deg,rgba(120,220,255,0) 18%,rgba(120,220,255,.1) 40%,rgba(185,150,255,.08) 55%,rgba(255,196,140,.07) 70%,rgba(255,196,140,0) 86%)}
-#sweep{overflow:hidden}
-#sweep .band{position:absolute;top:-10%;bottom:-10%;left:-15%;width:10%;transform:skewX(-14deg);will-change:transform;mix-blend-mode:screen;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(120,220,255,.35) 30%,rgba(255,255,255,.9) 50%,rgba(255,196,140,.35) 70%,rgba(255,255,255,0))}
-/* Serviços do hero como legenda tipográfica, com uma linha de progresso embaixo */
+/* Serviços do hero como legenda tipográfica, sobre uma linha fina */
 .hero-services{display:flex;flex-wrap:wrap;gap:6px 20px;position:relative;padding-bottom:14px}
 .hero-services::before{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--line)}
-.hero-services .bar{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink);transform-origin:left center;transform:scaleX(0)}
 .hero-services a{white-space:nowrap;font-size:.93rem;text-decoration:none;color:var(--muted);transition:color .25s}
-.hero-services a:hover,.hero-services a.on{color:var(--ink)}
-.scroll-hint{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:clamp(20px,4vw,48px);font-size:.85rem;color:var(--muted)}
+.hero-services a{position:relative}
+.hero-services a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;background:var(--accent);transform:scaleX(0);transform-origin:left center;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.hero-services a:hover,.hero-services a:focus-visible{color:var(--accent)}
+.hero-services a:hover::after,.hero-services a:focus-visible::after{transform:scaleX(1)}
+/* Brilho amarelo bem suave atrás do título, se movendo devagar */
+.hero{position:relative;overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;z-index:-1;width:min(70vw,900px);aspect-ratio:1;right:-12%;top:-18%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(244,188,68,.16),rgba(244,188,68,.05) 55%,rgba(244,188,68,0))}
+@media (prefers-reduced-motion:no-preference){.hero::before{animation:hero-glow 14s ease-in-out infinite alternate}}
+@keyframes hero-glow{to{transform:translate(-18%,22%) scale(1.15)}}
 
 /* ---------- Superfície de pintura ---------- */
 .paint{
@@ -236,6 +185,12 @@ button{font:inherit;color:inherit}
 .services{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(28px,4vw,56px) clamp(20px,3vw,40px);margin-top:56px}
 .service h3{font-size:1.35rem;font-stretch:112%;font-weight:700;margin:18px 0 6px}
 .service p{color:var(--muted);max-width:46ch}
+/* Serviço aberto pelo link do topo: o título acende em amarelo */
+.service h3{transition:color .4s}
+.service:target h3{color:var(--accent)}
+/* Ao chegar pelo link do topo, o antes/depois ganha um contorno amarelo que some aos poucos */
+.ba{transition:box-shadow .6s}
+.service.arrive .ba{box-shadow:0 0 0 2px var(--accent),0 18px 50px rgba(244,188,68,.18)}
 .service .when{margin-top:8px;font-size:.93rem}
 .ba{position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;--pos:50%;touch-action:pan-y}
 .ba > div{position:absolute;inset:0}
@@ -248,36 +203,38 @@ button{font:inherit;color:inherit}
 .ba .tag.l{left:10px}.ba .tag.r{right:10px}
 .illus{font-size:.8rem;color:var(--muted);margin-top:8px}
 
-.base-paint{background:radial-gradient(120% 90% at 28% 18%,#3A434E 0%,#1A1F26 48%,#0C0F13 100%)}
-.shine{background-image:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.22) 44%,transparent 58%),radial-gradient(120% 90% at 28% 18%,#46505C 0%,#1D232B 48%,#0C0F13 100%)}
-.t-lav-b{background:
+/* Visual ilustrativo de cada antes/depois (data-look = id do serviço). Serviço novo usa o padrão. */
+.ba .before{background:
+  repeating-radial-gradient(circle at 45% 50%,rgba(255,255,255,.09) 0 1px,transparent 1px 7px),
+  radial-gradient(120% 90% at 28% 18%,#363E48 0%,#1A1F26 48%,#0C0F13 100%);filter:brightness(.85)}
+.ba .after{background-image:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.22) 44%,transparent 58%),radial-gradient(120% 90% at 28% 18%,#46505C 0%,#1D232B 48%,#0C0F13 100%)}
+.before[data-look="lavagem"]{background:
   radial-gradient(circle at 22% 72%,rgba(150,120,80,.6) 0 10%,transparent 28%),
   radial-gradient(circle at 68% 30%,rgba(140,115,85,.5) 0 9%,transparent 24%),
   radial-gradient(circle at 82% 80%,rgba(140,115,85,.45) 0 7%,transparent 20%),
   linear-gradient(180deg,transparent 45%,rgba(120,95,60,.55)),
   radial-gradient(120% 90% at 28% 18%,#3A434E 0%,#1A1F26 48%,#0C0F13 100%);filter:saturate(.6) brightness(.85)}
-.t-pol-b{background:
-  repeating-radial-gradient(circle at 45% 50%,rgba(255,255,255,.09) 0 1px,transparent 1px 7px),
-  repeating-radial-gradient(circle at 75% 25%,rgba(255,255,255,.07) 0 1px,transparent 1px 9px),
-  radial-gradient(120% 90% at 28% 18%,#363E48 0%,#1A1F26 48%,#0C0F13 100%);filter:brightness(.85)}
-.t-hig-b,.t-hig-a{background:
-  repeating-linear-gradient(45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px),
-  repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0 2px,transparent 2px 4px)}
-.t-hig-b{background-color:#4A4F55;background-image:
+.before[data-look="higienizacao"]{background-color:#4A4F55;background-image:
   radial-gradient(ellipse at 30% 40%,rgba(90,70,40,.65) 0 12%,transparent 26%),
   radial-gradient(ellipse at 72% 70%,rgba(70,55,35,.55) 0 10%,transparent 22%),
   repeating-linear-gradient(45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px),
+  repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0 2px,transparent 2px 4px);filter:none}
+.after[data-look="higienizacao"]{background-color:#626A73;background-image:
+  repeating-linear-gradient(45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px),
   repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0 2px,transparent 2px 4px)}
-.t-hig-a{background-color:#626A73}
-.t-vit-b{background:
+.before[data-look="vitrificacao"]{background:
   repeating-linear-gradient(96deg,rgba(255,255,255,.07) 0 2px,transparent 2px 16px),
   linear-gradient(180deg,rgba(185,205,220,.22),rgba(185,205,220,.08)),
-  radial-gradient(120% 90% at 28% 18%,#3A434E 0%,#1A1F26 48%,#0C0F13 100%)}
-.t-vit-a{background:
+  radial-gradient(120% 90% at 28% 18%,#3A434E 0%,#1A1F26 48%,#0C0F13 100%);filter:none}
+.after[data-look="vitrificacao"]{background:
   radial-gradient(circle at 35% 35%,rgba(255,255,255,.95) 0 1.4px,rgba(205,228,242,.35) 2.4px 6px,transparent 7px) 0 0/34px 30px,
   radial-gradient(circle at 35% 35%,rgba(255,255,255,.9) 0 1px,rgba(205,228,242,.3) 2px 4px,transparent 5px) 11px 13px/22px 26px,
   linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 45%,transparent 58%),
   radial-gradient(120% 90% at 28% 18%,#46505C 0%,#1D232B 48%,#0C0F13 100%)}
+/* Foto enviada pelo painel substitui o visual ilustrativo */
+.has-photo.img-on{background-image:var(--img)!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;filter:none!important}
+@media (max-width:720px){.has-photo.img-on{background-image:var(--img-s,var(--img))!important}}
+.photo-slot.has-photo{color:transparent;border:0}
 
 .combo{padding:clamp(24px,4vw,40px);border-radius:20px;background:var(--surface);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;position:relative;overflow:hidden}
 .combo::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--film)}
@@ -292,7 +249,7 @@ button{font:inherit;color:inherit}
 .q fieldset{border:0}
 .opts{display:flex;flex-wrap:wrap;gap:10px}
 .opts button{padding:14px 20px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;text-align:left}
-.opts button:hover{border-color:var(--ink)}
+.opts button:hover{border-color:var(--accent);color:var(--accent)}
 .progress{font-size:.9rem;color:var(--muted);margin-bottom:12px}
 .result{display:none;padding:clamp(24px,4vw,40px);border-radius:20px;background:var(--surface)}
 .result.on{display:block}
@@ -320,7 +277,8 @@ button{font:inherit;color:inherit}
 .local h3{font-size:1rem;font-weight:650;margin-bottom:6px}
 .local p{color:var(--muted)}
 
-/* CTA */
+/* CTA: bloco amarelo com texto petróleo, como nos posts */
+.cta{background:var(--amarelo);color:var(--petroleo);--ink:var(--petroleo);--muted:#3B4F58;--line:rgba(36,52,60,.22);--cta-bg:var(--petroleo);--cta-ink:var(--amarelo);--accent:var(--petroleo);--todo:#9A3412}
 .cta h2{font-size:clamp(2.2rem,6vw,5.2rem);max-width:14ch;margin-bottom:40px}
 .magnetic{display:inline-flex;align-items:center;gap:12px;padding:22px 34px;border-radius:999px;text-decoration:none;background:var(--cta-bg);color:var(--cta-ink);font-weight:600;font-size:1.05rem;will-change:transform}
 .magnetic .label{display:inline-block;will-change:transform}
@@ -344,8 +302,8 @@ footer{border-top:1px solid var(--line);padding:28px clamp(20px,4vw,48px) calc(2
   .steps{margin-top:16px}
   .steps li{opacity:1}
   .layer-labels{margin-top:12px;gap:10px}
-  #hero{height:100svh;min-height:560px}
-  .hero .stage{grid-template-rows:auto auto;align-content:center;gap:clamp(28px,6vh,56px);padding-top:96px;padding-bottom:56px}
+  .hero{min-height:0}
+  .hero .stage{padding-top:120px;padding-bottom:16px}
   .hero-top{grid-template-columns:1fr;gap:16px}
   .story,.course{grid-template-columns:1fr}
   .photo-slot{aspect-ratio:16/9}
@@ -356,8 +314,6 @@ footer{border-top:1px solid var(--line);padding:28px clamp(20px,4vw,48px) calc(2
 @media (max-width:600px){
   body{font-size:1rem}
   .hero .lead{font-size:.98rem}
-  /* Carro de ponta a ponta da tela, sem cortar para-choques */
-  .car-wrap{width:100vw;max-width:none;margin-left:calc(-1 * clamp(20px,4vw,48px))}
   .block{padding:64px 0}
   .bridge{padding-bottom:0}
   .layers-visual{height:260px}
@@ -374,8 +330,7 @@ footer{border-top:1px solid var(--line);padding:28px clamp(20px,4vw,48px) calc(2
 }
 /* Celular deitado: telas baixas não comportam a abertura em altura cheia */
 @media (max-height:520px) and (orientation:landscape){
-  #hero{height:auto;min-height:0}
+  .hero{min-height:0}
   .hero .stage{padding-top:84px}
   .h1-main{font-size:clamp(2rem,5vw,3rem)}
-  .car-wrap{width:min(70%,640px);margin:0 auto}
 }
