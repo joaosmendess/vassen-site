@@ -297,8 +297,9 @@ footer{border-top:1px solid var(--line);padding:28px clamp(20px,4vw,48px) calc(2
   .paint{max-width:620px;margin:0 auto}
   .duo .paint{max-width:none}
   .duo .paint{overflow:hidden}
-  .layers-visual{height:300px}
-  .stack{width:min(62vw,320px)}
+  /* as camadas sobem ao se abrir (z + inclinação): caixa mais alta e pilha descida para não invadir os textos */
+  .layers-visual{height:390px}
+  .stack{width:min(62vw,320px);top:60px}
   .steps{margin-top:16px}
   .steps li{opacity:1}
   .layer-labels{margin-top:12px;gap:10px}
@@ -316,7 +317,8 @@ footer{border-top:1px solid var(--line);padding:28px clamp(20px,4vw,48px) calc(2
   .hero .lead{font-size:.98rem}
   .block{padding:64px 0}
   .bridge{padding-bottom:0}
-  .layers-visual{height:260px}
+  .layers-visual{height:350px}
+  .stack{width:min(58vw,300px);top:70px}
   .nav .go{padding:9px 14px;font-size:.88rem}
   .services{grid-template-columns:1fr;margin-top:40px}
   .duo{gap:10px}
