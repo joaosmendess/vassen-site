@@ -1,6 +1,6 @@
 @font-face{
   font-family:"Archivo";font-style:normal;font-weight:400 800;font-stretch:100% 125%;font-display:swap;
-  src:url("../assets/fonts/archivo-var.woff2") format("woff2");
+  src:url("/assets/fonts/archivo-var.woff2") format("woff2");
 }
 :root{
   --bg:#E6E9EC; --surface:#F4F6F8; --ink:#13171C; --muted:#56606B; --line:rgba(19,23,28,.14);

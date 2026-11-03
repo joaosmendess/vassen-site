@@ -18,7 +18,7 @@
       const { ok } = await api("session");
       if (ok) return openEditor();
       show("login"); $("#password").focus();
-    } catch (e){ show(e.status === 503 ? "setup" : "login"); }
+    } catch (e){ show(e.status === 503 || e.status === 404 ? "setup" : "login"); } // 404: hospedagem sem a API do editor
   }
   $("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
