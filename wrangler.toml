@@ -7,4 +7,4 @@ compatibility_date = "2025-09-01"
 # e troque o id abaixo pelo que o comando mostrar.
 [[kv_namespaces]]
 binding = "CONTENT"
-id = "TROCAR_PELO_ID_DO_KV"
+id = "e242651ee29741ccab4f36693c41373c"
