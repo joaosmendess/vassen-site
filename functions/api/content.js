@@ -1,8 +1,7 @@
 import { isAuthed, sameOrigin, json } from "../../lib/auth.js";
 import { purgePage } from "../../lib/page-cache.js";
 import { validate } from "../../lib/content.js";
-
-const KEEP_DAYS = 180;
+import { saveVersion } from "../../lib/versions.js";
 
 // Salva todos os textos e guarda uma cópia como versão, para poder voltar depois
 export async function onRequestPut({ request, env }){
@@ -13,7 +12,7 @@ export async function onRequestPut({ request, env }){
   if (problem) return json({ error: problem }, 400);
   const body = JSON.stringify(values), at = Date.now();
   await env.CONTENT.put("site", body);
-  await env.CONTENT.put("v:" + at, body, { expirationTtl: KEEP_DAYS * 86400, metadata: { at } });
+  await saveVersion(env, body, at);
   await purgePage(request); // quem salvou já vê a mudança no site
   return json({ ok: true, at });
 }

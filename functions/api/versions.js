@@ -1,18 +1,11 @@
 import { isAuthed, sameOrigin, json } from "../../lib/auth.js";
 import { purgePage } from "../../lib/page-cache.js";
+import { versionKey, saveVersion, latestVersions } from "../../lib/versions.js";
 
-// Lista as últimas versões salvas (mais recente primeiro)
+// Lista as últimas versões salvas (mais recente primeiro): uma única operação de list
 export async function onRequestGet({ request, env }){
   if (!(await isAuthed(request, env))) return json({ error: "Faça login." }, 401);
-  const keys = [];
-  let cursor;
-  do {
-    const page = await env.CONTENT.list({ prefix: "v:", cursor });
-    keys.push(...page.keys);
-    cursor = page.list_complete ? null : page.cursor;
-  } while (cursor);
-  const versions = keys.map((k) => ({ id: k.name.slice(2), at: Number(k.name.slice(2)) })).sort((a, b) => b.at - a.at).slice(0, 30);
-  return json({ versions });
+  return json({ versions: await latestVersions(env) });
 }
 
 // Volta o site para uma versão anterior (e registra isso como uma nova versão)
@@ -21,11 +14,11 @@ export async function onRequestPost({ request, env }){
   if (!sameOrigin(request)) return json({ error: "Origem inválida." }, 403);
   const { id } = await request.json().catch(() => ({}));
   if (!/^\d{13}$/.test(String(id))) return json({ error: "Versão inválida." }, 400);
-  const body = await env.CONTENT.get("v:" + id);
+  const body = await env.CONTENT.get(versionKey(Number(id)));
   if (!body) return json({ error: "Essa versão não existe mais." }, 404);
   const at = Date.now();
   await env.CONTENT.put("site", body);
-  await env.CONTENT.put("v:" + at, body, { expirationTtl: 180 * 86400, metadata: { at, restoredFrom: Number(id) } });
+  await saveVersion(env, body, at, { restoredFrom: Number(id) });
   await purgePage(request); // quem salvou já vê a mudança no site
   return json({ ok: true, at });
 }
