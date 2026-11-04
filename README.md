@@ -56,7 +56,8 @@ wrangler.toml              configuração da Cloudflare (nome do projeto e banco
    editáveis no lugar. Número do WhatsApp, links, textos do Google e as recomendações do seletor ficam no painel
    **Outros textos** (vêm do `<head>` e do bloco escondido `#dados` no fim do `index.html`).
 3. **Salvar** grava todos os valores no Cloudflare KV (`site`) e uma cópia como versão (`v:<data>`, guardada por 6 meses).
-4. Em cada visita, o `_middleware.js` lê os valores e troca o conteúdo dos elementos marcados antes de entregar a página.
+4. Nas visitas, o `_middleware.js` lê os valores e troca o conteúdo dos elementos marcados antes de entregar a página.
+   A página montada fica 60 s no cache de cada servidor da Cloudflare (`lib/page-cache.js`), então o KV não é lido a cada visita.
    O Google e a prévia do WhatsApp recebem o texto novo. Sem nada salvo, vale o texto que está no HTML.
 
 Segurança: só textos marcados podem mudar; títulos são sempre texto puro; parágrafos aceitam só negrito, itálico,
@@ -100,10 +101,18 @@ das recomendações em `main.js`.
 junto com o link do menu (`data-section-link`) e, no caso do FAQ, com os dados do FAQ para o Google. No editor ela
 continua visível, mais clara, para poder ser religada.
 
-### Limites do plano gratuito do KV
+### Limites do plano gratuito
 
-1.000 salvamentos por dia, 100.000 leituras por dia e 1 GB guardado. Cada visita lê os textos uma vez; as fotos
-ficam no cache da Cloudflare depois da primeira visita. Para um site deste tamanho, sobra muito.
+| Limite por dia | Gasto do site |
+|---|---|
+| KV: 100.000 leituras | página: no máximo 1 por minuto por servidor da Cloudflare (cache de 60 s); foto: 1 por servidor, depois fica em cache |
+| KV: 1.000 gravações | 2 por **Salvar** (textos + versão) e 2 por foto enviada (computador + celular) |
+| KV: 1 GB guardado | ~12 KB por versão (guardada 6 meses) e ~310 KB por foto enviada (fotos antigas não são apagadas) |
+| Functions: 100.000 requisições | 1 pela página + 1 por foto que o visitante vê; quem volta usa o cache do navegador |
+
+O limite que chega primeiro é o das Functions: cerca de 7.500 visitantes novos por dia no pior caso.
+Se precisar de mais, o plano Workers Paid (US$ 5/mês) resolve; mover as fotos para o R2 também tiraria as fotos
+da conta das Functions.
 
 ## Publicar na Cloudflare Pages
 
@@ -120,8 +129,8 @@ npx wrangler pages secret put SESSION_SECRET --project-name vassen-site   # text
 Depois, a cada mudança no código: `npm run deploy`. Ou conecte o repositório do GitHub no painel da
 Cloudflare Pages (pasta de saída `public`, sem comando de build) para publicar a cada push.
 
-Os textos editados pelo cliente **não** dependem de publicar de novo: aparecem no site em segundos
-(até 1 minuto para chegar a todos os servidores da Cloudflare).
+Os textos editados pelo cliente **não** dependem de publicar de novo: quem salvou vê na hora, e o resto do público
+em até ~2 minutos (até 1 minuto para o KV chegar a todos os servidores, mais até 60 s de cache da página).
 
 ## Pendências antes de publicar
 

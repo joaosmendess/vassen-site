@@ -1,4 +1,5 @@
 import { isAuthed, sameOrigin, json } from "../../lib/auth.js";
+import { purgePage } from "../../lib/page-cache.js";
 import { validate } from "../../lib/content.js";
 
 const KEEP_DAYS = 180;
@@ -13,5 +14,6 @@ export async function onRequestPut({ request, env }){
   const body = JSON.stringify(values), at = Date.now();
   await env.CONTENT.put("site", body);
   await env.CONTENT.put("v:" + at, body, { expirationTtl: KEEP_DAYS * 86400, metadata: { at } });
+  await purgePage(request); // quem salvou já vê a mudança no site
   return json({ ok: true, at });
 }

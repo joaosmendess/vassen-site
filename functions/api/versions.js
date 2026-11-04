@@ -1,4 +1,5 @@
 import { isAuthed, sameOrigin, json } from "../../lib/auth.js";
+import { purgePage } from "../../lib/page-cache.js";
 
 // Lista as últimas versões salvas (mais recente primeiro)
 export async function onRequestGet({ request, env }){
@@ -25,5 +26,6 @@ export async function onRequestPost({ request, env }){
   const at = Date.now();
   await env.CONTENT.put("site", body);
   await env.CONTENT.put("v:" + at, body, { expirationTtl: 180 * 86400, metadata: { at, restoredFrom: Number(id) } });
+  await purgePage(request); // quem salvou já vê a mudança no site
   return json({ ok: true, at });
 }
