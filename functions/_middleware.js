@@ -1,8 +1,14 @@
 import { applyContent } from "../lib/content.js";
 import { isAuthed } from "../lib/auth.js";
+import { withSecurityHeaders } from "../lib/headers.js";
 
-// Encaixa os textos salvos no painel em toda página HTML do site (o _routes.json limita a quais caminhos isso roda)
+// Roda na página, na API e nas fotos (ver _routes.json): põe os cabeçalhos de segurança em tudo
+// e encaixa os textos salvos no painel nas páginas HTML
 export async function onRequest(ctx){
+  return withSecurityHeaders(await withContent(ctx));
+}
+
+async function withContent(ctx){
   const res = await ctx.next();
   if (!(res.headers.get("content-type") || "").includes("text/html") || !ctx.env.CONTENT) return res;
   let values = null;

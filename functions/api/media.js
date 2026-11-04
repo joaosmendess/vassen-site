@@ -34,6 +34,8 @@ export async function onRequestPost({ request, env }){
     const m = /^([a-z0-9]{4,20}-[a-f0-9]{10})\.(webp|jpg|png)$/.exec(of);
     if (!m || m[2] !== ext || !(await exists(env, "media:" + of))) return json({ error: "Foto original não encontrada." }, 400);
     name = m[1] + "-s." + ext;
+    // Fotos ficam em cache para sempre: uma versão de celular já enviada não pode mudar sob o mesmo endereço
+    if (await exists(env, "media:" + name)) return json({ error: "A versão de celular dessa foto já foi enviada." }, 409);
   } else {
     const rand = [...crypto.getRandomValues(new Uint8Array(5))].map((x) => x.toString(16).padStart(2, "0")).join("");
     name = Date.now().toString(36) + "-" + rand + "." + ext;
